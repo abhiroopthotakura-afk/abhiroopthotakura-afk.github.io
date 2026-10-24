@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Abhiroop Thotakura | Controls &amp; Automation Engineer</title>
+<link rel="icon" href="abhiroop-profile.jpg">
+<meta name="description" content="Abhiroop Thotakura, Controls & Automation Engineer: PLC, HMI/SCADA, robotics and vision integration for 24x7 manufacturing.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: single dark control-room column, max 1120px; hero splits text | photo; sections stack with mono "tag" eyebrows. Deliberately dark-only, like the reference. */
+:root {
+  color-scheme: dark;
+  --bg: #07111f;
+  --surface: #0c1a2d;
+  --surface-2: #11233a;
+  --line: #1d3250;
+  --fg: #e7eef7;
+  --muted: #95a7bd;
+  --accent: #79c0ff;
+  --live: #43d98c;
+  --live-dim: #1d4a36;
+  --font-display: "Barlow Semi Condensed", "Arial Narrow", "Segoe UI", sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  --wrap: 1120px;
+  --radius: 14px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font: 400 1rem/1.65 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg);
+}
+a { color: inherit; }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.1; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.wrap {
+  max-width: var(--wrap); margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+/* Header */
+header.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+header.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding-block: 14px; }
+.brand { font-family: var(--font-display); font-weight: 700; font-size: 1.2rem; letter-spacing: .01em; text-decoration: none; white-space: nowrap; }
+nav { min-width: 0; overflow-x: auto; scrollbar-width: none; }
+nav ul { display: flex; gap: 22px; list-style: none; margin: 0; padding: 0; }
+nav a { color: var(--muted); text-decoration: none; font-size: .9rem; white-space: nowrap; }
+nav a:hover { color: var(--fg); }
+
+/* Shared section bits */
+section { padding-block: 88px; border-bottom: 1px solid var(--line); }
+.tag {
+  font-family: var(--font-mono); font-size: .78rem; font-weight: 500;
+  letter-spacing: .08em; text-transform: uppercase; color: var(--accent);
+  display: inline-flex; align-items: center; gap: 10px;
+}
+.tag::before { content: ""; width: 28px; height: 1px; background: currentColor; }
+.section-head { display: grid; gap: 12px; margin-bottom: 44px; }
+.section-head h2 { font-size: clamp(2rem, 4.2vw, 3rem); font-weight: 600; }
+.lede { color: var(--muted); max-width: 62ch; }
+
+/* Hero */
+.hero { padding-block: 72px 80px; }
+.hero .wrap { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, .9fr); gap: 56px; align-items: center; }
+.hero h1 { font-size: clamp(3.2rem, 8vw, 5.6rem); font-weight: 700; letter-spacing: -.01em; margin-top: 18px; }
+.hero h1 span { display: block; color: var(--accent); }
+.hero .pitch { font-family: var(--font-display); font-size: clamp(1.35rem, 2.4vw, 1.7rem); font-weight: 600; margin-top: 18px; max-width: 30ch; }
+.hero .summary { color: var(--muted); margin-top: 16px; max-width: 60ch; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; padding: 0; list-style: none; }
+.chips li { font-size: .82rem; font-weight: 500; padding: 6px 13px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 10px;
+  font-weight: 600; font-size: .95rem; text-decoration: none; border: 1px solid var(--line);
+  background: var(--surface); color: var(--fg); cursor: pointer; font-family: inherit;
+  transition: border-color .2s, transform .2s;
+}
+.btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+.btn.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+.portrait { position: relative; justify-self: end; width: 100%; max-width: 380px; }
+.portrait figure {
+  margin: 0; border-radius: 22px; overflow: hidden; border: 1px solid var(--line);
+  background: var(--surface); box-shadow: 0 30px 60px -30px rgb(0 0 0 / .7);
+}
+.portrait img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; max-width: 100%; }
+.portrait figcaption {
+  display: flex; justify-content: space-between; gap: 12px; padding: 14px 18px;
+  font-family: var(--font-mono); font-size: .76rem; color: var(--muted); border-top: 1px solid var(--line);
+}
+.status { display: inline-flex; align-items: center; gap: 8px; color: var(--live); }
+.status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--live); box-shadow: 0 0 0 4px var(--live-dim); }
+
+/* Ladder rung: the one signature moment */
+.hero .rung-wrap { display: block; }
+.rung {
+  margin-top: 48px; border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--surface); padding: 18px 20px 14px; overflow-x: auto;
+}
+.rung-label { font-family: var(--font-mono); font-size: .72rem; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 6px; }
+.rung svg { display: block; min-width: 560px; width: 100%; height: auto; }
+.rung .rail { stroke: var(--muted); stroke-width: 2; }
+.rung .wire { stroke: var(--line); stroke-width: 2; }
+.rung .flow { stroke: var(--live); stroke-width: 2.5; stroke-dasharray: 8 10; animation: flow 1.4s linear infinite; }
+.rung .contact { stroke: var(--fg); stroke-width: 2; fill: none; }
+.rung .on { stroke: var(--live); }
+.rung text { font-family: var(--font-mono); font-size: 10.5px; fill: var(--muted); }
+.rung text.addr { fill: var(--fg); font-size: 11px; }
+@keyframes flow { to { stroke-dashoffset: -18; } }
+
+/* About */
+.about-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 48px; align-items: start; }
+.about-copy { display: grid; gap: 16px; color: var(--muted); }
+.about-copy strong { color: var(--fg); font-weight: 600; }
+.stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.stat { padding: 22px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.stat b { display: block; font-family: var(--font-display); font-size: 1.9rem; font-weight: 700; color: var(--fg); }
+.stat span { font-size: .88rem; color: var(--muted); }
+
+/* Skills */
+.skills { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.skill { padding: 24px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); display: grid; gap: 10px; align-content: start; }
+.skill .kicker { font-family: var(--font-mono); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.skill h3 { font-size: 1.45rem; font-weight: 600; }
+.skill ul { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
+.skill li { font-size: .82rem; color: var(--muted); padding: 4px 10px; border-radius: 6px; background: var(--surface-2); }
+
+/* Experience timeline */
+.timeline { display: grid; gap: 0; }
+.job { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 32px; padding-block: 34px; border-top: 1px solid var(--line); }
+.job:first-child { border-top: 0; padding-top: 0; }
+.job .when { font-family: var(--font-mono); font-size: .82rem; color: var(--muted); display: grid; gap: 6px; align-content: start; }
+.job .when .co { font-family: var(--font-display); font-size: 1.25rem; font-weight: 600; color: var(--fg); }
+.job h3 { font-size: 1.6rem; font-weight: 600; }
+.job .where { color: var(--accent); font-size: .92rem; margin-top: 4px; }
+.job ul { margin: 16px 0 0; padding-left: 18px; display: grid; gap: 8px; color: var(--muted); }
+.job li::marker { color: var(--accent); }
+
+/* Projects */
+.projects { display: grid; gap: 22px; }
+.case { border: 1px solid var(--line); border-radius: 18px; background: var(--surface); padding: 32px; display: grid; gap: 22px; }
+.case .meta { font-family: var(--font-mono); font-size: .76rem; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
+.case h3 { font-size: clamp(1.6rem, 3vw, 2.1rem); font-weight: 600; margin-top: 8px; }
+.case > div > p { color: var(--muted); margin-top: 10px; max-width: 68ch; }
+.steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.steps div { border-top: 2px solid var(--line); padding-top: 12px; }
+.steps dt { font-family: var(--font-mono); font-size: .72rem; letter-spacing: .07em; text-transform: uppercase; color: var(--fg); }
+.steps dd { margin: 6px 0 0; font-size: .9rem; color: var(--muted); }
+dl.steps { margin: 0; }
+
+/* Education & certs */
+.edu-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; }
+.panel { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 28px; display: grid; gap: 12px; align-content: start; }
+.panel h3 { font-size: 1.5rem; font-weight: 600; }
+.panel .sub { color: var(--accent); font-size: .92rem; }
+.panel p { color: var(--muted); font-size: .94rem; }
+.cert { display: flex; gap: 14px; align-items: flex-start; padding-block: 12px; border-top: 1px solid var(--line); }
+.cert:first-of-type { border-top: 0; }
+.cert b { font-weight: 600; }
+.cert small { display: block; color: var(--muted); font-size: .84rem; }
+.seal { flex: none; width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--live); display: grid; place-items: center; color: var(--live); font-family: var(--font-mono); font-size: .7rem; }
+
+/* Contact */
+.contact { border-bottom: 0; }
+.contact-card { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 40px; align-items: center; border: 1px solid var(--line); border-radius: 22px; padding: 44px; background: linear-gradient(140deg, var(--surface-2), var(--surface) 60%); }
+.contact-card h2 { font-size: clamp(2.2rem, 5vw, 3.4rem); font-weight: 700; margin-top: 12px; }
+.contact-card .lede { margin-top: 14px; }
+.reach { display: grid; gap: 12px; }
+.reach-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
+.reach-row small { display: block; font-family: var(--font-mono); font-size: .7rem; color: var(--muted); letter-spacing: .07em; text-transform: uppercase; }
+.reach-row span { font-weight: 500; overflow-wrap: anywhere; user-select: all; }
+.reach-row > div { min-width: 0; }
+.copy { flex: none; padding: 8px 14px; font-size: .84rem; }
+footer { padding-block: 32px 48px; color: var(--muted); font-size: .84rem; font-family: var(--font-mono); }
+footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+
+@media (max-width: 900px) {
+  .hero .wrap, .about-grid, .edu-grid, .contact-card { grid-template-columns: minmax(0, 1fr); }
+  .portrait { justify-self: start; max-width: 340px; order: -1; }
+  .skills { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .job { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+}
+@media (max-width: 600px) {
+  section { padding-block: 64px; }
+  .skills, .steps { grid-template-columns: minmax(0, 1fr); }
+  .stats { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .case, .contact-card { padding: 24px; }
+  header.top .wrap { gap: 16px; }
+  nav ul { gap: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .rung .flow { animation: none; stroke-dasharray: none; }
+  .btn { transition: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top">Abhiroop Thotakura</a>
+    <nav aria-label="Sections">
+      <ul>
+        <li><a href="#about">About</a></li>
+        <li><a href="#skills">Skills</a></li>
+        <li><a href="#experience">Experience</a></li>
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#education">Education</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <span class="tag">Controls &amp; Automation Engineer</span>
+        <h1>Abhiroop <span>Thotakura</span></h1>
+        <p class="pitch">Keeping 24x7 production lines running, from ladder logic to field wiring.</p>
+        <p class="summary">Controls &amp; Automation Engineer with 3+ years of experience programming, troubleshooting and commissioning Allen-Bradley, Omron and Siemens PLC systems across automotive, medical device and diesel engine manufacturing.</p>
+        <ul class="chips" aria-label="Platforms">
+          <li>Allen-Bradley</li><li>Omron</li><li>Siemens</li><li>FANUC</li><li>Cognex</li><li>Ignition</li>
+        </ul>
+        <div class="actions">
+          <a class="btn primary" href="#experience">View Experience</a>
+          <a class="btn" href="#projects">See Projects</a>
+          <a class="btn" href="#contact">Get in Touch</a>
+        </div>
+      </div>
+      <div class="portrait">
+        <figure>
+          <img src="abhiroop-profile.jpg" alt="Portrait of Abhiroop Thotakura" width="400" height="400">
+          <figcaption><span>Dayton, OH</span><span class="status">General Motors</span></figcaption>
+        </figure>
+      </div>
+    </div>
+    <div class="wrap rung-wrap">
+      <div class="rung" role="img" aria-label="Ladder logic rung: PLC OK, I/O healthy and no active fault energize Line Running">
+        <div class="rung-label">Rung 0001 · Line permissive</div>
+        <svg viewBox="0 0 760 92" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+          <line class="rail" x1="10" y1="8" x2="10" y2="84"/>
+          <line class="rail" x1="750" y1="8" x2="750" y2="84"/>
+          <line class="wire" x1="10" y1="56" x2="750" y2="56"/>
+          <line class="flow" x1="10" y1="56" x2="750" y2="56"/>
+          <!-- XIC PLC_OK -->
+          <rect x="120" y="44" width="30" height="24" fill="var(--surface)"/>
+          <line class="contact on" x1="122" y1="44" x2="122" y2="68"/><line class="contact on" x1="148" y1="44" x2="148" y2="68"/>
+          <text class="addr" x="135" y="30" text-anchor="middle">PLC_OK</text>
+          <text x="135" y="86" text-anchor="middle">XIC</text>
+          <!-- XIC IO_HEALTHY -->
+          <rect x="290" y="44" width="30" height="24" fill="var(--surface)"/>
+          <line class="contact on" x1="292" y1="44" x2="292" y2="68"/><line class="contact on" x1="318" y1="44" x2="318" y2="68"/>
+          <text class="addr" x="305" y="30" text-anchor="middle">IO_HEALTHY</text>
+          <text x="305" y="86" text-anchor="middle">XIC</text>
+          <!-- XIO FAULT_ACTIVE -->
+          <rect x="460" y="44" width="30" height="24" fill="var(--surface)"/>
+          <line class="contact on" x1="462" y1="44" x2="462" y2="68"/><line class="contact on" x1="488" y1="44" x2="488" y2="68"/>
+          <line class="contact on" x1="464" y1="66" x2="486" y2="46"/>
+          <text class="addr" x="475" y="30" text-anchor="middle">FAULT_ACTIVE</text>
+          <text x="475" y="86" text-anchor="middle">XIO</text>
+          <!-- OTE LINE_RUNNING -->
+          <rect x="628" y="40" width="44" height="32" fill="var(--surface)"/>
+          <path class="contact on" d="M640 42 Q628 56 640 70 M660 42 Q672 56 660 70"/>
+          <text class="addr" x="650" y="30" text-anchor="middle">LINE_RUNNING</text>
+          <text x="650" y="86" text-anchor="middle">OTE</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <section id="about">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="tag">About</span>
+        <h2>From the PLC rung to the production floor.</h2>
+      </div>
+      <div class="about-grid">
+        <div class="about-copy">
+          <p>I'm an <strong>Automation &amp; Controls Engineer at General Motors</strong> in Dayton, Ohio, where I support 24x7 manufacturing by diagnosing PLC and control-system faults and getting production-critical equipment back online.</p>
+          <p>My work spans <strong>Allen-Bradley ControlLogix and CompactLogix, Omron NJ/NX/CJ and Siemens PLCs</strong>, FactoryTalk View and Ignition HMI/SCADA, servo drives and VFDs, FANUC robot/PMC integration and Cognex vision systems.</p>
+          <p>Before GM, I built PLC/HMI programs and ran <strong>FDA IQ/OQ/PQ validation</strong> for medical device lines, and automated diesel engine assembly lines and test cells. An M.S. in Business Intelligence &amp; Analytics lets me turn PLC alarm and cycle data into uptime and quality improvements.</p>
+        </div>
+        <div class="stats">
+          <div class="stat"><b>3+ Years</b><span>Controls &amp; automation experience</span></div>
+          <div class="stat"><b>3 Industries</b><span>Automotive, medical device, diesel engine</span></div>
+          <div class="stat"><b>24x7</b><span>Production breakdown response</span></div>
+          <div class="stat"><b>IQ/OQ/PQ</b><span>FDA 21 CFR Part 820 &amp; Part 11 validation</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="skills">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="tag">Technical Skills</span>
+        <h2>The industrial automation toolkit.</h2>
+      </div>
+      <div class="skills">
+        <article class="skill">
+          <span class="kicker">PLC Platforms</span>
+          <h3>Control logic</h3>
+          <ul><li>ControlLogix</li><li>CompactLogix</li><li>Studio 5000</li><li>RSLogix 500</li><li>Omron NJ/NX/CJ</li><li>Sysmac Studio</li><li>CX-Programmer</li><li>Siemens PLCs</li><li>Ladder Logic</li><li>Function Block</li><li>Structured Text</li></ul>
+        </article>
+        <article class="skill">
+          <span class="kicker">HMI / SCADA</span>
+          <h3>Operator interfaces</h3>
+          <ul><li>FactoryTalk View SE/ME</li><li>PanelView Plus</li><li>Omron NA/NB HMIs</li><li>Siemens HMIs</li><li>Ignition</li></ul>
+        </article>
+        <article class="skill">
+          <span class="kicker">Motion &amp; Robotics</span>
+          <h3>Drives, robots, vision</h3>
+          <ul><li>Servo Drives</li><li>PowerFlex VFDs</li><li>Omron MX2</li><li>FANUC Robot/PMC</li><li>Cognex Vision</li></ul>
+        </article>
+        <article class="skill">
+          <span class="kicker">Networks</span>
+          <h3>Industrial comms</h3>
+          <ul><li>EtherNet/IP</li><li>EtherCAT</li><li>DeviceNet</li><li>Modbus TCP</li><li>OPC UA</li><li>MES Integration</li></ul>
+        </article>
+        <article class="skill">
+          <span class="kicker">Standards &amp; Quality</span>
+          <h3>Safety &amp; validation</h3>
+          <ul><li>NFPA 79</li><li>ISO 13849</li><li>FDA 21 CFR Part 11/820</li><li>GAMP 5</li><li>IQ/OQ/PQ</li><li>PFMEA</li><li>5-Why</li></ul>
+        </article>
+        <article class="skill">
+          <span class="kicker">Design &amp; Analytics</span>
+          <h3>Drawings &amp; data</h3>
+          <ul><li>AutoCAD Electrical</li><li>EPLAN</li><li>SQL</li><li>Python</li><li>Power BI</li><li>Tableau</li></ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="experience">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="tag">Experience</span>
+        <h2>Professional experience.</h2>
+      </div>
+      <div class="timeline">
+        <article class="job">
+          <div class="when"><span class="co">General Motors</span><span>June 2025 – Present</span><span>Dayton, OH</span></div>
+          <div>
+            <h3>Automation &amp; Controls Engineer</h3>
+            <ul>
+              <li>Troubleshoot Omron and Siemens PLC-controlled production equipment by monitoring ladder logic, machine sequences, permissives, interlocks, timers, counters and I/O conditions.</li>
+              <li>Diagnose motors, VFDs, sensors, actuators, conveyors, pneumatic devices and control circuits to support rapid breakdown recovery in 24x7 operations.</li>
+              <li>Review online Siemens PLC logic, controller diagnostics, network configurations, HMI conditions and drive status during production failures and component replacements.</li>
+              <li>Support Cognex vision systems and FANUC robot/PMC equipment by tracing triggers, command-enable conditions, interlocks, position-complete signals and inspection results.</li>
+              <li>Support equipment installation, start-up and validation by verifying control sequences, I/O behavior, interlocks, alarms and safe return-to-production requirements.</li>
+              <li>Lead structured root cause analysis on recurring failures with electricians, maintenance, production, engineering and vendors.</li>
+            </ul>
+          </div>
+        </article>
+        <article class="job">
+          <div class="when"><span class="co">Trinity Medical Products</span><span>Nov 2024 – May 2025</span><span>Jersey City, NJ</span></div>
+          <div>
+            <h3>Automation Engineer</h3>
+            <ul>
+              <li>Developed Allen-Bradley and Omron PLC/HMI programs for medical device assembly, packaging and inspection lines.</li>
+              <li>Authored and executed IQ/OQ/PQ protocols in compliance with FDA 21 CFR Part 820 and Part 11.</li>
+              <li>Integrated Omron vision inspection and automated reject verification to catch defects before packaging.</li>
+              <li>Managed controls change control and drawing updates; trained technicians on machine troubleshooting.</li>
+            </ul>
+          </div>
+        </article>
+        <article class="job">
+          <div class="when"><span class="co">Kirloskar Oil Engines Ltd.</span><span>Mar 2021 – Jul 2023</span><span>Bangalore, India</span></div>
+          <div>
+            <h3>Systems Engineer</h3>
+            <ul>
+              <li>Programmed and maintained Allen-Bradley and Omron PLCs for diesel engine assembly lines and engine test cells.</li>
+              <li>Automated engine test bench data acquisition and SCADA reporting, replacing manual test logging and improving data accuracy.</li>
+              <li>Retrofitted legacy relay-based machines with PLC and VFD controls, improving reliability.</li>
+              <li>Led root-cause analysis on recurring line stoppages with production, quality and maintenance teams to improve OEE.</li>
+              <li>Prepared electrical schematics, panel layouts and I/O lists for new stations and line expansions.</li>
+            </ul>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="projects">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="tag">Featured Projects</span>
+        <h2>Engineering case studies.</h2>
+      </div>
+      <div class="projects">
+        <article class="case">
+          <div>
+            <span class="meta">Stevens Institute of Technology</span>
+            <h3>Predictive Maintenance Dashboard for Manufacturing Lines</h3>
+            <p>A data pipeline that uses PLC alarm and cycle data to spot equipment trending toward failure before it stops the line.</p>
+          </div>
+          <dl class="steps">
+            <div><dt>Data source</dt><dd>PLC alarm and cycle data from manufacturing stations.</dd></div>
+            <div><dt>Pipeline</dt><dd>Python/SQL processing to clean, aggregate and analyze machine data.</dd></div>
+            <div><dt>Detection</dt><dd>Flags equipment trending toward failure for proactive maintenance.</dd></div>
+            <div><dt>Dashboards</dt><dd>Power BI views for OEE, downtime Pareto and MTBF/MTTR by station.</dd></div>
+          </dl>
+        </article>
+        <article class="case">
+          <div>
+            <span class="meta">Academic Project</span>
+            <h3>PLC-Controlled Automated Sorting Conveyor</h3>
+            <p>An Allen-Bradley CompactLogix system that sorts parts by size and color, with a full operator HMI.</p>
+          </div>
+          <dl class="steps">
+            <div><dt>Controller</dt><dd>Allen-Bradley CompactLogix PLC programmed for sort sequencing.</dd></div>
+            <div><dt>Sensing</dt><dd>Photoelectric and vision sensors classify parts by size and color.</dd></div>
+            <div><dt>HMI</dt><dd>FactoryTalk View screens with live status, alarms and manual/auto modes.</dd></div>
+            <div><dt>Drives</dt><dd>Tuned VFD speed control for consistent conveyor throughput.</dd></div>
+          </dl>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="education">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="tag">Education &amp; Certifications</span>
+        <h2>Academic foundation.</h2>
+      </div>
+      <div class="edu-grid">
+        <article class="panel">
+          <span class="tag">December 2024</span>
+          <h3>Master of Science in Business Intelligence &amp; Analytics</h3>
+          <span class="sub">Stevens Institute of Technology · Hoboken, NJ</span>
+          <p>Relevant coursework: Predictive Maintenance, Machine Data Analysis, Process Optimization, Statistical Process Control (SPC), Root-Cause Analysis, Quality KPI Dashboards, Python, SQL, Power BI and Tableau.</p>
+        </article>
+        <article class="panel">
+          <span class="tag">Certifications</span>
+          <div class="cert"><span class="seal">6σ</span><div><b>Six Sigma Green Belt</b><small>Process improvement &amp; DMAIC</small></div></div>
+          <div class="cert"><span class="seal">QMS</span><div><b>Quality Management Systems</b><small>QMS certification</small></div></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="contact">
+    <div class="wrap">
+      <div class="contact-card">
+        <div>
+          <span class="tag">Contact</span>
+          <h2>Let's connect.</h2>
+          <p class="lede">Open to conversations about controls engineering, industrial automation, PLC, HMI/SCADA, commissioning and manufacturing production support.</p>
+        </div>
+        <div class="reach">
+          <div class="reach-row">
+            <div><small>Email</small><span id="email">abhiroopt3377@gmail.com</span></div>
+            <button class="btn copy" id="copy-email" type="button">Copy</button>
+          </div>
+          <div class="reach-row">
+            <div><small>Location</small><span>Dayton, Ohio</span></div>
+          </div>
+          <a class="btn primary" href="mailto:abhiroopt3377@gmail.com" style="justify-content:center">Email Me</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Abhiroop Thotakura</span>
+    <span>Controls &amp; Automation Engineer · Dayton, OH</span>
+  </div>
+</footer>
+
+<script>
+  const copyBtn = document.getElementById('copy-email');
+  copyBtn.addEventListener('click', () => {
+    const text = document.getElementById('email').textContent;
+    const done = () => { copyBtn.textContent = 'Copied'; setTimeout(() => copyBtn.textContent = 'Copy', 1800); };
+    const fallback = () => {
+      const r = document.createRange(); r.selectNodeContents(document.getElementById('email'));
+      const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+      copyBtn.textContent = 'Press Ctrl+C';
+    };
+    try { navigator.clipboard.writeText(text).then(done, fallback); } catch (e) { fallback(); }
+  });
+</script>
+</body>
+</html>
