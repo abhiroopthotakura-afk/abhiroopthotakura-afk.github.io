@@ -22,6 +22,10 @@
   --accent: #79c0ff;
   --live: #43d98c;
   --live-dim: #1d4a36;
+  --warn: #f2b84b;
+  --stop: #ff6b6b;
+  --carton: #b88c5c;
+  --grid: rgb(121 192 255 / .035);
   --font-display: "Barlow Semi Condensed", "Arial Narrow", "Segoe UI", sans-serif;
   --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
@@ -31,7 +35,10 @@
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body {
-  background: var(--bg);
+  background-color: var(--bg);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-attachment: fixed;
   color: var(--fg);
   font: 400 1rem/1.65 var(--font-body);
   -webkit-font-smoothing: antialiased;
@@ -49,6 +56,22 @@ p { margin: 0; }
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+/* Animated backdrop: signal traces + gears, fixed behind everything */
+#bg-fx { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+
+/* Animated work cell: conveyor -> photo-eye -> vision -> robot -> pallet */
+.cell { padding-block: 56px 72px; }
+.cell-frame {
+  position: relative; height: 240px; border: 1px solid var(--line); border-radius: 18px; overflow: hidden;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 55%, transparent), var(--surface));
+}
+#line-fx { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.cell-hud {
+  position: absolute; top: 12px; left: 16px; right: 16px; display: flex; flex-wrap: wrap; gap: 4px 20px;
+  font-family: var(--font-mono); font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
+}
+.cell-hud b { color: var(--fg); font-weight: 500; font-variant-numeric: tabular-nums; }
 
 /* Header */
 header.top {
@@ -203,6 +226,8 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
   .skills, .steps { grid-template-columns: minmax(0, 1fr); }
   .stats { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .case, .contact-card { padding: 24px; }
+  .cell { padding-block: 40px 56px; }
+  .cell-frame { height: 220px; }
   header.top .wrap { gap: 16px; }
   nav ul { gap: 16px; }
 }
@@ -214,6 +239,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
 </style>
 </head>
 <body>
+<canvas id="bg-fx" aria-hidden="true"></canvas>
 
 <header class="top">
   <div class="wrap">
@@ -285,6 +311,19 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
           <text class="addr" x="650" y="30" text-anchor="middle">LINE_RUNNING</text>
           <text x="650" y="86" text-anchor="middle">OTE</text>
         </svg>
+      </div>
+    </div>
+  </section>
+
+  <section class="cell" aria-label="Animated automated production cell">
+    <div class="wrap">
+      <div class="cell-frame" role="img" aria-label="Animation: boxes move along a conveyor past a photo-eye sensor and vision camera, then a robot arm stacks them on a pallet">
+        <canvas id="line-fx" aria-hidden="true"></canvas>
+        <div class="cell-hud" aria-hidden="true">
+          <span class="status">Cell 01 · Running</span>
+          <span>Parts out <b id="hud-count">1,286</b></span>
+          <span>Cycle <b id="hud-cycle">--</b> s</span>
+        </div>
       </div>
     </div>
   </section>
@@ -503,6 +542,341 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
     };
     try { navigator.clipboard.writeText(text).then(done, fallback); } catch (e) { fallback(); }
   });
+
+  // Animated backdrop (signal traces + gears) and the conveyor/robot work cell
+  (() => {
+    const css = getComputedStyle(document.documentElement);
+    const tok = n => css.getPropertyValue(n).trim();
+    const C = {
+      accent: tok('--accent'), live: tok('--live'), line: tok('--line'), muted: tok('--muted'), fg: tok('--fg'),
+      bg: tok('--bg'), surface2: tok('--surface-2'), warn: tok('--warn'), stop: tok('--stop'), carton: tok('--carton')
+    };
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const ease = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+
+    function fit(cv) {
+      const r = cv.getBoundingClientRect(), d = Math.min(window.devicePixelRatio || 1, 2);
+      cv.width = Math.max(1, Math.round(r.width * d)); cv.height = Math.max(1, Math.round(r.height * d));
+      const ctx = cv.getContext('2d'); ctx.setTransform(d, 0, 0, d, 0, 0);
+      return { ctx, w: r.width, h: r.height };
+    }
+    function rr(ctx, x, y, w, h, r) {
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h);
+    }
+
+    /* ---- Backdrop ---- */
+    const bgCv = document.getElementById('bg-fx');
+    let B, traces = [], gears = [];
+    const rng = s => () => (s = s * 16807 % 2147483647) / 2147483647;
+
+    function buildBg() {
+      B = fit(bgCv);
+      const r = rng(11), step = 40;
+      traces = [];
+      const n = Math.min(28, Math.round(B.w * B.h / 70000) + 6);
+      for (let i = 0; i < n; i++) {
+        let x = Math.round(r() * B.w / step) * step, y = Math.round(r() * B.h / step) * step, horiz = r() < .5;
+        const pts = [[x, y]], cum = [0];
+        const segs = 2 + Math.floor(r() * 4);
+        for (let s = 0; s < segs; s++) {
+          const len = (2 + Math.floor(r() * 5)) * step * (r() < .5 ? -1 : 1);
+          if (horiz) x += len; else y += len;
+          horiz = !horiz;
+          pts.push([x, y]); cum.push(cum[cum.length - 1] + Math.abs(len));
+        }
+        traces.push({ pts, cum, len: cum[cum.length - 1], speed: 50 + r() * 70, off: r() * 1000, color: r() < .75 ? C.accent : C.live });
+      }
+      const mesh = (p, rad, ang) => {
+        const d = p.r + rad - Math.max(6, rad * .16);
+        const teeth = Math.round(rad / 4.2);
+        return { x: p.x + d * Math.cos(ang), y: p.y + d * Math.sin(ang), r: rad, teeth, speed: -p.speed * p.r / rad, phase: Math.PI / teeth };
+      };
+      const a = { x: B.w - 96, y: Math.max(170, B.h * .3), r: 66, teeth: 16, speed: .25, phase: 0 };
+      const c = { x: 70, y: B.h * .8, r: 54, teeth: 13, speed: -.2, phase: 0 };
+      gears = [a, mesh(a, 38, 2.4), c, mesh(c, 32, -.9)];
+    }
+
+    function pointAt(tr, d) {
+      let k = 1;
+      while (k < tr.cum.length - 1 && tr.cum[k] < d) k++;
+      const [x0, y0] = tr.pts[k - 1], [x1, y1] = tr.pts[k];
+      const f = (d - tr.cum[k - 1]) / (tr.cum[k] - tr.cum[k - 1]);
+      return [x0 + (x1 - x0) * f, y0 + (y1 - y0) * f];
+    }
+
+    function drawGear(ctx, g, ang) {
+      const ro = g.r, ri = g.r - Math.max(6, g.r * .16), t = g.teeth, s = Math.PI / t;
+      ctx.beginPath();
+      for (let i = 0; i < t; i++) {
+        const b = ang + i * 2 * s;
+        ctx.lineTo(g.x + ri * Math.cos(b - s * .55), g.y + ri * Math.sin(b - s * .55));
+        ctx.lineTo(g.x + ro * Math.cos(b - s * .3), g.y + ro * Math.sin(b - s * .3));
+        ctx.lineTo(g.x + ro * Math.cos(b + s * .3), g.y + ro * Math.sin(b + s * .3));
+        ctx.lineTo(g.x + ri * Math.cos(b + s * .55), g.y + ri * Math.sin(b + s * .55));
+      }
+      ctx.closePath(); ctx.stroke();
+      for (const k of [.78, .28, .1]) { ctx.beginPath(); ctx.arc(g.x, g.y, ri * k, 0, 7); ctx.stroke(); }
+      for (let k = 0; k < 5; k++) {
+        const b = ang + k * 2 * Math.PI / 5;
+        ctx.beginPath();
+        ctx.moveTo(g.x + ri * .28 * Math.cos(b), g.y + ri * .28 * Math.sin(b));
+        ctx.lineTo(g.x + ri * .78 * Math.cos(b), g.y + ri * .78 * Math.sin(b));
+        ctx.stroke();
+      }
+    }
+
+    function drawBg(t) {
+      const { ctx, w, h } = B;
+      ctx.clearRect(0, 0, w, h);
+      ctx.lineWidth = 1.2; ctx.strokeStyle = C.line; ctx.globalAlpha = .6;
+      for (const tr of traces) {
+        ctx.beginPath();
+        tr.pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
+        ctx.stroke();
+        for (const p of [tr.pts[0], tr.pts[tr.pts.length - 1]]) { ctx.beginPath(); ctx.arc(p[0], p[1], 3, 0, 7); ctx.stroke(); }
+      }
+      for (const tr of traces) {
+        const d = (tr.off + t * tr.speed) % tr.len;
+        const fade = Math.max(0, Math.min(1, d / 50, (tr.len - d) / 50));
+        ctx.fillStyle = tr.color;
+        for (let k = 0; k < 8 && d - k * 5 >= 0; k++) {
+          const [x, y] = pointAt(tr, d - k * 5);
+          ctx.globalAlpha = fade * (1 - k / 8) * .8;
+          ctx.beginPath(); ctx.arc(x, y, 2.3 - k * .18, 0, 7); ctx.fill();
+        }
+      }
+      ctx.globalAlpha = .2; ctx.strokeStyle = C.accent; ctx.lineWidth = 1.4;
+      for (const g of gears) drawGear(ctx, g, g.phase + t * g.speed);
+      ctx.globalAlpha = 1;
+    }
+
+    /* ---- Work cell ---- */
+    const lineCv = document.getElementById('line-fx');
+    const hudCount = document.getElementById('hud-count'), hudCycle = document.getElementById('hud-cycle');
+    const BW = 32, BH = 24, STEM = 14;
+    let L, G, sim;
+
+    function newSim() {
+      return { boxes: [], spawn: 0, travel: 0, clock: 0, count: 1286, stack: [], stackAlpha: 1, clearing: false,
+        flash: 0, lastOut: null, arm: { tip: { ...G.home }, steps: null, held: null } };
+    }
+    function buildLine() {
+      L = fit(lineCv);
+      const { w, h } = L, floorY = h - 22, beltY = h - 78, reach = h * .38, showLight = w >= 600;
+      // Lay out right to left from the frame edge: stack light, pallet, robot, then the conveyor fills the rest
+      const x0 = 16, x1 = w - (showLight ? 98 : 18) - 2 * reach;
+      const stopX = x1 - BW - 6, rx = stopX + BW / 2 + reach, boxTop = beltY - BH;
+      G = {
+        floorY, beltY, x0, x1, boxTop, stopX, rx, ry: floorY - 34, L1: h * .32, L2: h * .28,
+        peX: x0 + (x1 - x0) * .3, camX: x0 + (x1 - x0) * .62, px: rx + reach, palY: floorY - 10,
+        gantryY: 48, hoverY: boxTop - 30 - STEM, lightX: w - 22, showLight
+      };
+      // Home = arm upright over the base; passing through it keeps the elbow switch between sides invisible
+      G.home = { x: G.rx, y: G.ry - (G.L1 + G.L2) + 1 + STEM };
+      sim = newSim();
+      for (let i = 0; i < 160; i++) step(.05);  // pre-roll so the belt is already busy
+    }
+
+    function ik(tx, ty) {
+      const { rx: bx, ry: by, L1, L2 } = G;
+      const dx = tx - bx, dy = ty - by;
+      const d = Math.min(Math.max(Math.hypot(dx, dy), Math.abs(L1 - L2) + 1), L1 + L2 - .5);
+      const a = Math.atan2(dy, dx), k = Math.acos((L1 * L1 + d * d - L2 * L2) / (2 * L1 * d));
+      let elbow = null;
+      for (const s of [a + k, a - k]) {
+        const e = { x: bx + L1 * Math.cos(s), y: by + L1 * Math.sin(s) };
+        if (!elbow || e.y < elbow.y) elbow = e;
+      }
+      return { elbow, wrist: { x: bx + d * Math.cos(a), y: by + d * Math.sin(a) } };
+    }
+
+    function updateHud() {
+      hudCount.textContent = sim.count.toLocaleString('en-US');
+    }
+
+    function step(dt) {
+      const s = sim, g = G, v = 70, arm = s.arm;
+      s.clock += dt; s.travel += v * dt; s.spawn -= dt;
+      if (s.spawn <= 0 && !s.boxes.some(b => b.x < BW)) { s.boxes.push({ x: -BW - 2, cam: false }); s.spawn = 4; }
+      s.boxes.forEach((b, i) => {
+        const lim = i === 0 ? g.stopX : s.boxes[i - 1].x - BW - 10;
+        b.x = Math.min(b.x + v * dt, lim);
+        if (!b.cam && b.x + BW / 2 >= g.camX) { b.cam = true; s.flash = 1; }
+      });
+      s.flash = Math.max(0, s.flash - dt * 2.2);
+      if (s.clearing) {
+        s.stackAlpha -= dt * 1.5;
+        if (s.stackAlpha <= 0) { s.stack = []; s.stackAlpha = 1; s.clearing = false; }
+      }
+      if (!arm.steps && !s.clearing && s.boxes[0] && s.boxes[0].x >= g.stopX - .5) {
+        const pick = { x: g.stopX + BW / 2, y: g.boxTop };
+        const place = { x: g.px, y: g.palY - BH * (s.stack.length + 1) };
+        const hover = p => ({ x: p.x, y: g.hoverY + STEM });
+        arm.steps = [
+          { to: hover(pick), d: .55 },
+          { to: pick, d: .35, end: () => { arm.held = s.boxes.shift(); } },
+          { to: hover(pick), d: .35 },
+          { to: { ...g.home }, d: .45 },
+          { to: hover(place), d: .45 },
+          { to: place, d: .35, end: () => {
+            arm.held = null; s.stack.push(1); s.count++;
+            if (s.lastOut != null) hudCycle.textContent = (s.clock - s.lastOut).toFixed(1);
+            s.lastOut = s.clock; updateHud();
+          } },
+          { to: hover(place), d: .3 },
+          { to: { ...g.home }, d: .55, end: () => { if (s.stack.length >= 3) s.clearing = true; } }
+        ];
+        arm.i = 0; arm.t = 0; arm.from = { ...arm.tip };
+      }
+      if (arm.steps) {
+        const st = arm.steps[arm.i];
+        arm.t += dt;
+        const f = ease(Math.min(1, arm.t / st.d));
+        arm.tip = { x: arm.from.x + (st.to.x - arm.from.x) * f, y: arm.from.y + (st.to.y - arm.from.y) * f };
+        if (arm.t >= st.d) {
+          if (st.end) st.end();
+          arm.i++; arm.t = 0; arm.from = { ...arm.tip };
+          if (arm.i >= arm.steps.length) arm.steps = null;
+        }
+      }
+    }
+
+    function drawBox(ctx, x, y, a, inspected) {
+      ctx.globalAlpha = a; ctx.fillStyle = C.carton; rr(ctx, x, y, BW, BH, 2); ctx.fill();
+      ctx.globalAlpha = a * .25; ctx.fillStyle = C.bg; ctx.fillRect(x + BW / 2 - 3, y, 6, BH);
+      if (inspected) { ctx.globalAlpha = a; ctx.fillStyle = C.live; ctx.fillRect(x + 4, y + 5, 6, 4); }
+      ctx.globalAlpha = 1;
+    }
+
+    function drawLine() {
+      const { ctx, w, h } = L, g = G, s = sim;
+      ctx.clearRect(0, 0, w, h);
+      ctx.font = '500 10px "IBM Plex Mono", ui-monospace, monospace';
+      ctx.lineCap = 'butt';
+
+      // Floor
+      ctx.strokeStyle = C.line; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(0, g.floorY + .5); ctx.lineTo(w, g.floorY + .5); ctx.stroke();
+      for (let x = -10; x < w; x += 14) { ctx.beginPath(); ctx.moveTo(x, g.floorY + 16); ctx.lineTo(x + 10, g.floorY + 6); ctx.stroke(); }
+
+      // Gantry holding the photo-eye and camera
+      ctx.strokeStyle = C.muted; ctx.lineWidth = 2; ctx.globalAlpha = .55;
+      ctx.beginPath();
+      ctx.moveTo(g.peX - 40, g.beltY); ctx.lineTo(g.peX - 40, g.gantryY); ctx.lineTo(g.camX + 40, g.gantryY); ctx.lineTo(g.camX + 40, g.beltY);
+      ctx.stroke(); ctx.globalAlpha = 1;
+
+      // Conveyor: legs, belt, rollers, moving surface, end stop
+      ctx.strokeStyle = C.line; ctx.lineWidth = 3;
+      for (let x = g.x0 + 30; x < g.x1; x += 110) { ctx.beginPath(); ctx.moveTo(x, g.beltY + 14); ctx.lineTo(x, g.floorY); ctx.stroke(); }
+      ctx.fillStyle = C.surface2; ctx.strokeStyle = C.muted; ctx.lineWidth = 1;
+      rr(ctx, g.x0, g.beltY, g.x1 - g.x0, 16, 8); ctx.fill(); ctx.stroke();
+      const rot = s.travel / 5;
+      for (let x = g.x0 + 10; x < g.x1 - 6; x += 26) {
+        ctx.beginPath(); ctx.arc(x, g.beltY + 8, 5, 0, 7); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x, g.beltY + 8); ctx.lineTo(x + 5 * Math.cos(rot), g.beltY + 8 + 5 * Math.sin(rot)); ctx.stroke();
+      }
+      ctx.setLineDash([6, 8]); ctx.lineDashOffset = -s.travel; ctx.strokeStyle = C.accent; ctx.globalAlpha = .6;
+      ctx.beginPath(); ctx.moveTo(g.x0 + 8, g.beltY + 1); ctx.lineTo(g.x1 - 8, g.beltY + 1); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+      ctx.fillStyle = C.muted; ctx.fillRect(g.stopX + BW + 2, g.beltY - 8, 3, 8);
+
+      for (const b of s.boxes) drawBox(ctx, b.x, g.boxTop, 1, b.cam);
+
+      // Photo-eye sensor and its beam
+      const blocked = s.boxes.some(b => b.x < g.peX && b.x + BW > g.peX);
+      const peY = g.gantryY + 50;
+      ctx.strokeStyle = C.muted; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(g.peX, g.gantryY); ctx.lineTo(g.peX, peY); ctx.stroke();
+      ctx.fillStyle = C.surface2; rr(ctx, g.peX - 7, peY, 14, 14, 3); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = blocked ? C.warn : C.live; ctx.beginPath(); ctx.arc(g.peX, peY + 7, 2.5, 0, 7); ctx.fill();
+      ctx.setLineDash([3, 4]); ctx.strokeStyle = blocked ? C.warn : C.accent; ctx.globalAlpha = blocked ? .95 : .5;
+      ctx.beginPath(); ctx.moveTo(g.peX, peY + 14); ctx.lineTo(g.peX, blocked ? g.boxTop : g.beltY); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      // Vision camera with inspection flash
+      ctx.strokeStyle = C.muted;
+      ctx.beginPath(); ctx.moveTo(g.camX, g.gantryY); ctx.lineTo(g.camX, g.gantryY + 14); ctx.stroke();
+      ctx.fillStyle = C.surface2; rr(ctx, g.camX - 14, g.gantryY + 14, 28, 18, 3); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = C.fg; rr(ctx, g.camX - 5, g.gantryY + 32, 10, 5, 1); ctx.fill();
+      if (s.flash > 0) {
+        ctx.globalAlpha = s.flash * .35; ctx.fillStyle = C.live;
+        ctx.beginPath();
+        ctx.moveTo(g.camX - 5, g.gantryY + 37); ctx.lineTo(g.camX + 5, g.gantryY + 37);
+        ctx.lineTo(g.camX + 24, g.boxTop); ctx.lineTo(g.camX - 24, g.boxTop); ctx.closePath(); ctx.fill();
+        ctx.globalAlpha = s.flash; ctx.fillText('PASS', g.camX + 20, g.gantryY + 30);
+        ctx.globalAlpha = 1;
+      }
+
+      // Pallet and stacked cartons
+      ctx.fillStyle = C.surface2; ctx.strokeStyle = C.muted;
+      rr(ctx, g.px - 30, g.palY, 60, 10, 2); ctx.fill(); ctx.stroke();
+      s.stack.forEach((_, i) => drawBox(ctx, g.px - BW / 2, g.palY - BH * (i + 1), s.stackAlpha, true));
+
+      // Robot arm
+      const { elbow, wrist } = ik(s.arm.tip.x, s.arm.tip.y - STEM);
+      const tip = { x: wrist.x, y: wrist.y + STEM };
+      ctx.fillStyle = C.surface2; ctx.strokeStyle = C.warn; ctx.lineWidth = 1.5;
+      rr(ctx, g.rx - 22, g.floorY - 22, 44, 22, 4); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = C.warn; rr(ctx, g.rx - 11, g.ry - 4, 22, g.floorY - 22 - g.ry + 4, 3); ctx.fill();
+      if (s.arm.held) drawBox(ctx, tip.x - BW / 2, tip.y, 1, true);
+      ctx.lineCap = 'round'; ctx.strokeStyle = C.warn;
+      ctx.lineWidth = 11; ctx.beginPath(); ctx.moveTo(g.rx, g.ry); ctx.lineTo(elbow.x, elbow.y); ctx.stroke();
+      ctx.lineWidth = 8; ctx.beginPath(); ctx.moveTo(elbow.x, elbow.y); ctx.lineTo(wrist.x, wrist.y); ctx.stroke();
+      ctx.fillStyle = C.bg;
+      for (const p of [{ x: g.rx, y: g.ry }, elbow, wrist]) { ctx.beginPath(); ctx.arc(p.x, p.y, 3.5, 0, 7); ctx.fill(); }
+      const open = s.arm.held ? BW / 2 + 2 : BW / 2 + 6;
+      ctx.lineCap = 'butt'; ctx.lineWidth = 2.5; ctx.strokeStyle = C.fg;
+      ctx.beginPath();
+      ctx.moveTo(wrist.x, wrist.y); ctx.lineTo(wrist.x, tip.y - 4);
+      ctx.moveTo(wrist.x - open, tip.y + 8); ctx.lineTo(wrist.x - open, tip.y - 4); ctx.lineTo(wrist.x + open, tip.y - 4); ctx.lineTo(wrist.x + open, tip.y + 8);
+      ctx.stroke();
+
+      // Stack light: amber blinks while the robot is moving
+      if (g.showLight) {
+        const lx = g.lightX;
+        ctx.strokeStyle = C.muted; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(lx, g.floorY); ctx.lineTo(lx, g.floorY - 70); ctx.stroke();
+        const lamps = [[C.stop, false], [C.warn, !!s.arm.steps && Math.floor(s.clock * 3) % 2 === 0], [C.live, true]];
+        lamps.forEach(([c, on], i) => {
+          ctx.globalAlpha = on ? 1 : .18; ctx.fillStyle = c;
+          rr(ctx, lx - 6, g.floorY - 106 + i * 12, 12, 11, 2); ctx.fill();
+        });
+        ctx.globalAlpha = 1;
+      }
+
+      // Device tags
+      ctx.fillStyle = C.muted;
+      ctx.fillText('CV-01', g.x0 + 40, g.floorY - 6);
+      ctx.fillText('PE-101', g.peX + 12, peY + 11);
+      ctx.fillText('CAM-01', g.camX + 20, g.gantryY + 18);
+      ctx.fillText('R-01', g.rx + 28, g.floorY - 6);
+      ctx.fillText('PLT-01', g.px - 18, g.floorY + 15);
+    }
+
+    /* ---- Run ---- */
+    let cellVisible = true, last = performance.now();
+    function build() { buildBg(); buildLine(); updateHud(); }
+    function frame(now) {
+      const dt = Math.min(.05, (now - last) / 1000); last = now;
+      drawBg(now / 1000);
+      if (cellVisible) { step(dt); drawLine(); }
+      requestAnimationFrame(frame);
+    }
+    function drawStill() { drawBg(0); drawLine(); }
+
+    build();
+    if (reduce) drawStill();
+    else {
+      if ('IntersectionObserver' in window) new IntersectionObserver(e => { cellVisible = e[0].isIntersecting; }).observe(lineCv);
+      requestAnimationFrame(frame);
+    }
+    let resizeTimer;
+    addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => { build(); if (reduce) drawStill(); }, 150);
+    });
+  })();
 </script>
 </body>
 </html>
